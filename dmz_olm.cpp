@@ -10,15 +10,15 @@
 
 #pragma mark points and rects
 
-dmz_point dmz_create_point(float x, float y) { 
-  dmz_point d; 
-  d.x = x; 
-  d.y = y; 
-  return d; 
+dmz_point dmz_create_point(float x, float y) {
+  dmz_point d;
+  d.x = x;
+  d.y = y;
+  return d;
 }
 
 dmz_point dmz_scale_point(const dmz_point src_p, const dmz_rect src_f, const dmz_rect dst_f) {
-  return dmz_create_point(dst_f.x + (src_p.x - src_f.x) * dst_f.w / src_f.w, 
+  return dmz_create_point(dst_f.x + (src_p.x - src_f.x) * dst_f.w / src_f.w,
                           dst_f.y + (src_p.y - src_f.y) * dst_f.h / src_f.h);
 }
 
@@ -55,10 +55,9 @@ dmz_card_info dmz_card_info_for_prefix_and_length(uint8_t *number_array, uint8_t
   // See, for example, http://en.wikipedia.org/wiki/List_of_Issuer_Identification_Numbers
   // and also http://www.barclaycard.co.uk/business/documents/pdfs/bin_rules.pdf
   // So the Maestro UK rules here are *very* overly loose and inclusive.
-  
+
   dmz_card_info card_types[] =
   {
-    {CardTypeMastercard,  16, 4, 2221, 2720},      // MasterCard 2-Series
     {CardTypeDiscover,    14, 3, 300, 305},        // Diners Club (Discover)
     {CardTypeDiscover,    14, 3, 309, 309},        // Diners Club (Discover)
     {CardTypeAmex,        15, 2, 34, 34},          // AmEx
@@ -79,14 +78,14 @@ dmz_card_info dmz_card_info_for_prefix_and_length(uint8_t *number_array, uint8_t
     {CardTypeMaestro,     16, 2, 66, 69},          // Maestro
     {CardTypeDiscover,    16, 2, 88, 88},          // China UnionPay (Discover)
   };
-  
+
   dmz_card_info card_type_unrecognized = {CardTypeUnrecognized, -1, 1, 9, 9};
   dmz_card_info card_type_ambiguous = {CardTypeAmbiguous, -1, 1, 9, 9};
-  
+
   if (number_length > 0) {
     dmz_card_info card_info = card_type_unrecognized;
     int number_of_compatible_card_types = 0;
-    
+
     for (int i = 0; i < sizeof(card_types) / sizeof(dmz_card_info); i++) {
       dmz_card_info info = card_types[i];
       if (allow_incomplete_number) {
@@ -104,18 +103,18 @@ dmz_card_info dmz_card_info_for_prefix_and_length(uint8_t *number_array, uint8_t
         factor *= 10;
         relevant_prefix_length--;
       }
-      
+
       long card_prefix = 0;
       for (int j = 0; j < relevant_prefix_length; j++) {
         card_prefix = (card_prefix * 10) + number_array[j];
       }
-      
+
       if (card_prefix >= (info.min_prefix / factor) && card_prefix <= (info.max_prefix / factor)) {
         number_of_compatible_card_types++;
         card_info = info;
       }
     }
-    
+
     if (number_of_compatible_card_types > 0) {
       if (number_of_compatible_card_types == 1) {
         return card_info;
@@ -125,7 +124,7 @@ dmz_card_info dmz_card_info_for_prefix_and_length(uint8_t *number_array, uint8_t
       }
     }
   }
-  
+
   return card_type_unrecognized;
 }
 
@@ -154,12 +153,15 @@ dmz_rect dmz_guide_frame(FrameOrientation orientation, float preview_width, floa
       inset_h = 0.0f;
       break;
   }
-  
+
   guide.x = inset_w;
-  guide.y = inset_h;
+  // guide.y = inset_h;
   guide.w = preview_width - 2.0f * inset_w;
-  guide.h = preview_height - 2.0f * inset_h;
-  
+  // guide.h = preview_height - 2.0f * inset_h;
+
+  guide.h = guide.w / kCreditCardTargetWidth * kCreditCardTargetHeight;
+  guide.y = (preview_height - guide.h) / 2;
+
   return guide;
 }
 
